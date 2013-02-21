@@ -29,7 +29,12 @@ namespace Optimizer
 			List<string> excludes = new List<string>(FixupPaths(info.BaseUrl, GetExcludes(info.BaseUrl)));
 			var dirs = options.Excludes.Split(',');
 			foreach (string dir in dirs)
+			{
 				excludes.AddRange(FixupPaths(info.BaseUrl, GetExcludes(info.BaseUrl, dir)));
+				excludes.AddRange(FixupPaths(info.BaseUrl, GetExcludes(info.BaseUrl, "", string.Concat("main-",dir,".js"), SearchOption.TopDirectoryOnly)));
+			}
+				
+			excludes.AddRange(FixupPaths(info.BaseUrl, GetExcludes(info.BaseUrl, "", "*.min.js", SearchOption.TopDirectoryOnly)));
 			info.Excludes = excludes.ToArray();
 
 			info.Includes = FixupPaths(info.BaseUrl, GetIncludes(info.BaseUrl)).Except(info.Excludes);
@@ -58,7 +63,11 @@ namespace Optimizer
 				JSON.EnsureProperty(config, "wrap", true);
 
 				var insertRequire = JSON.EnsureArray(config, "insertRequire");
-				insertRequire.Add("main");
+				var moduleStart = Path.GetFileNameWithoutExtension(info.MainPath);
+				if (insertRequire.Count < 1)
+				{
+					insertRequire.Add(moduleStart);
+				}
 			}
 			else
 			{
@@ -117,6 +126,10 @@ namespace Optimizer
 
 		public IEnumerable<string> GetExcludes(string applicationSource, string dir)
 		{
+			return GetExcludes(applicationSource, dir, "*");
+		}
+		public IEnumerable<string> GetExcludes(string applicationSource, string dir, string filePattern, SearchOption searchOption = SearchOption.AllDirectories)
+		{
 			var vendor = Path.Combine(applicationSource, dir);
 
 			if (!Directory.Exists(vendor))
@@ -124,7 +137,7 @@ namespace Optimizer
 				return new string[] { };
 			}
 
-			return from fileName in Directory.EnumerateFiles(vendor, "*", SearchOption.AllDirectories)
+			return from fileName in Directory.EnumerateFiles(vendor, filePattern, searchOption)
 				   select fileName;
 		}
 
