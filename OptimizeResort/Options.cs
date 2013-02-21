@@ -25,6 +25,16 @@ namespace Optimizer {
     [Option("e", "pluginExtension", DefaultValue = ".html", HelpText = "The view file extension.")]
     public string ViewExtension { get; set; }
 
+	  /* Extentions for Resort */
+	[Option("b", "build", DefaultValue = "app.build.js", HelpText = "The r.js optional build file")]
+	public string Build { get; set; }
+
+	[Option("t", "target", DefaultValue = "main.js", HelpText = "The main.js file for Resort")]
+	public string Target { get; set; }
+
+	[Option("x", "excludeDirs", DefaultValue = "", HelpText = "Directories to exclude from optimization")]
+	public string Excludes { get; set; }
+
     [HelpOption]
     public string GetUsage() {
       return HelpText.AutoBuild(this, x => HelpText.DefaultParsingErrorsHandler(this, x));
