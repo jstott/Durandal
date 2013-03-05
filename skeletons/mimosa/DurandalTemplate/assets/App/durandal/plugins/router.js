@@ -171,7 +171,7 @@
     function configureRoute(routeInfo) {
         router.prepareRouteInfo(routeInfo);
 
-        routesByPath[routeInfo.url] = routeInfo;
+        routesByPath[routeInfo.url.toString()] = routeInfo;
         allRoutes.push(routeInfo);
 
         if (routeInfo.visible) {
@@ -232,7 +232,11 @@
             window.history.back();
         },
         navigateTo: function (url) {
-            sammy.setLocation(url);
+            if (sammy.lookupRoute('get', url)) {
+                sammy.setLocation(url);
+            } else {
+                window.location.href = url;
+            }
         },
         replaceLocation: function (url) {
             window.location.replace(url);
