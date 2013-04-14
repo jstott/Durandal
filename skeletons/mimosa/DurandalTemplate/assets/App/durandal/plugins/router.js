@@ -272,7 +272,7 @@
                     window.location.replace(url);
                     break;
                 default:
-                    if (sammy.lookupRoute('get', url)) {
+                    if (sammy.lookupRoute('get', url) && url.indexOf("http") !== 0) {
                         sammy.setLocation(url);
                     } else {
                         window.location.href = url;
@@ -371,7 +371,7 @@
                         skipRouteUrl = null;
                         return false;
                     } else {
-                        throw new Error("Expected to skip url '" + skipRouteUrl + "', but found url '" + context.path + "'");
+                        system.error(new Error("Expected to skip url '" + skipRouteUrl + "', but found url '" + context.path + "'"));
                     }
                 });
 
