@@ -1,4 +1,24 @@
-﻿.page-host {
+﻿.splash {
+    text-align: center;
+    margin: 10% 0 0 0;
+}
+
+.splash .message {
+    font-size: 5em;
+    line-height: 1.5em;
+    -webkit-text-shadow: rgba(0, 0, 0, 0.5) 0px 0px 15px;
+    text-shadow: rgba(0, 0, 0, 0.5) 0px 0px 15px;
+    text-transform: uppercase;
+}
+
+.splash .icon-spinner {
+    text-align: center;
+    display: inline-block;
+    font-size: 5em;
+    margin-top: 50px;
+}
+
+.page-host {
     position: relative;
     top: 40px;
 }
@@ -12,10 +32,6 @@
     font-size: 18px
 }
 
-.well {
-    padding: 8px 0;
-}
-
 .loader {
     margin: 6px 8px 4px 8px;
     visibility: hidden;
@@ -23,14 +39,6 @@
 
 .loader.active {
     visibility: visible;
-}
-
-.knockout-samples {
-    margin-top: 20px;
-}
-
-.knockout-samples .liveExample {
-    padding: 20px;
 }
 
 @media (max-width: 979px) {
