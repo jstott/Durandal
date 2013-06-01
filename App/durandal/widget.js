@@ -109,13 +109,6 @@
             settings.beforeBind = this.beforeBind;
             settings.activate = true;
             settings.activationData = settings;
-            settings.afterCompose = function() {
-                if(settings.model.deactivate) {
-                    ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
-                        settings.model.deactivate();
-                    });
-                }
-            };
 
             return settings;
         },
