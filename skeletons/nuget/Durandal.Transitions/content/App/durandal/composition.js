@@ -1,5 +1,5 @@
-﻿define(['./viewLocator', './viewModelBinder', './viewEngine', './system', './viewModel'],
-function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
+﻿define(['./viewLocator', './viewModelBinder', './viewEngine', './system'],
+function (viewLocator, viewModelBinder, viewEngine, system) {
 
     var dummyModel = {},
         activeViewAttributeName = 'data-active-view',
@@ -29,11 +29,6 @@ function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
 
         return state;
     }
-
-    function shouldPerformActivation(context) {
-        return context.model && context.model.activate
-            && ((composition.activateDuringComposition && context.activate == undefined) || context.activate || context.activationData);
-    }
     
     function endComposition() {
         compositionCount--;
@@ -48,14 +43,22 @@ function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
     }
 
     function tryActivate(context, successCallback) {
-        if (shouldPerformActivation(context)) {
-            viewModel.activator().activateItem(context.model, context.activationData).then(function (success) {
-                if(success) {
-                    successCallback();
-                } else {
-                    endComposition();
-                }
-            });
+        if (context.activate && context.model && context.model.activate) {
+            var result;
+
+            if(system.isArray(context.activationData)) {
+                result = context.model.activate.apply(context.model, context.activationData);
+            } else {
+                result = context.model.activate(context.activationData);
+            }
+
+            if(result && result.then) {
+                result.then(successCallback);
+            } else if(result || result === undefined) {
+                successCallback();
+            } else {
+                endComposition();
+            }
         } else {
             successCallback();
         }
@@ -131,7 +134,6 @@ function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
     }
 
     composition = {
-        activateDuringComposition: false,
         convertTransitionToModuleId: function (name) {
             return 'durandal/transitions/' + name;
         },
@@ -221,24 +223,37 @@ function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
             return viewLocator.locateViewForObject(context.model, context.viewElements);
         },
         getSettings: function (valueAccessor, element) {
-            var value = ko.utils.unwrapObservable(valueAccessor()) || {};
+            var value = valueAccessor(),
+                settings = ko.utils.unwrapObservable(value) || {},
+                isActivator = value && value.__activator__,
+                moduleId;
 
-            if (system.isString(value)) {
-                return value;
+            if (system.isString(settings)) {
+                return settings;
             }
 
-            var moduleId = system.getModuleId(value);
-            if (moduleId) {
-                return {
-                    model: value
+            moduleId = system.getModuleId(settings);
+            if(moduleId) {
+                settings = {
+                    model: settings
                 };
+            } else {
+                if(!isActivator && settings.model) {
+                    isActivator = settings.model.__activator__;
+                }
+
+                for(var attrName in settings) {
+                    settings[attrName] = ko.utils.unwrapObservable(settings[attrName]);
+                }
             }
 
-            for (var attrName in value) {
-                value[attrName] = ko.utils.unwrapObservable(value[attrName]);
+            if (isActivator) {
+                settings.activate = false;
+            } else if (settings.activate === undefined) {
+                settings.activate = true;
             }
 
-            return value;
+            return settings;
         },
         executeStrategy: function (context) {
             context.strategy(context).then(function (child) {
@@ -271,7 +286,7 @@ function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
                 this.executeStrategy(context);
             }
         },
-        compose: function (element, settings) {
+        compose: function (element, settings, bindingContext) {
             compositionCount++;
 
             if (system.isString(settings)) {
@@ -281,7 +296,8 @@ function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
                     };
                 } else {
                     settings = {
-                        model: settings
+                        model: settings,
+                        activate: true
                     };
                 }
             }
@@ -289,7 +305,8 @@ function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
             var moduleId = system.getModuleId(settings);
             if (moduleId) {
                 settings = {
-                    model: settings
+                    model: settings,
+                    activate: true
                 };
             }
 
@@ -298,6 +315,7 @@ function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
             settings.activeView = hostState.activeView;
             settings.parent = element;
             settings.triggerViewAttached = triggerViewAttached;
+            settings.bindingContext = bindingContext;
 
             if (settings.cacheViews && !settings.viewElements) {
                 settings.viewElements = hostState.childElements;
@@ -328,8 +346,7 @@ function (viewLocator, viewModelBinder, viewEngine, system, viewModel) {
     ko.bindingHandlers.compose = {
         update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var settings = composition.getSettings(valueAccessor);
-            settings.bindingContext = bindingContext;
-            composition.compose(element, settings);
+            composition.compose(element, settings, bindingContext);
         }
     };
 
