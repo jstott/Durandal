@@ -31,15 +31,4 @@ Packages/
 
 !skeletons/vsix/DurandalMvcSpaTemplateVsix/packages/
 !build.bat
-skeletons/nuget/Durandal/content/App/durandal/amd/optimizer.exe
-skeletons/nuget/Durandal/content/App/durandal/amd/optimizer.pdb
-skeletons/nuget/Durandal/content/App/durandal/amd/optimizerResort.exe
-skeletons/nuget/Durandal/content/App/durandal/amd/optimizerResort.pdb
-skeletons/vstemplate/DurandalTemplate/DurandalTemplate/App/durandal/amd/optimizer.exe
-skeletons/vstemplate/DurandalTemplate/DurandalTemplate/App/durandal/amd/optimizer.pdb
-skeletons/vstemplate/DurandalTemplate/DurandalTemplate/App/durandal/amd/optimizerResort.exe
-skeletons/vstemplate/DurandalTemplate/DurandalTemplate/App/durandal/amd/optimizerResort.pdb
-skeletons/nuget/Durandal/content/App/durandal/amd/optimizerResort.exe
-skeletons/nuget/Durandal/content/App/durandal/amd/optimizerResort.pdb
-skeletons/vstemplate/DurandalTemplate/DurandalTemplate/App/durandal/amd/optimizerResort.exe
-skeletons/vstemplate/DurandalTemplate/DurandalTemplate/App/durandal/amd/optimizerResort.pdb
+!*.ps1
