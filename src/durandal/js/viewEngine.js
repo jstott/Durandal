@@ -1,4 +1,4 @@
-﻿define(['durandal/system'], function (system) {
+﻿define(['durandal/system', 'jquery'], function (system, $) {
     var parseMarkup;
 
     if ($.parseHTML) {
@@ -61,7 +61,20 @@
                     var element = that.processMarkup(markup);
                     element.setAttribute('data-view', viewId);
                     dfd.resolve(element);
-                });
+                }).fail(function(err){
+                        that.createFallbackView(viewId, requirePath, err).then(function(element){
+                            element.setAttribute('data-view', viewId);
+                            dfd.resolve(element);
+                        });
+                    });
+            }).promise();
+        },
+        createFallbackView: function (viewId, requirePath, err) {
+            var that = this,
+                message = 'View Not Found. Searched for "' + viewId + '" via path "' + requirePath + '".';
+
+            return system.defer(function(dfd) {
+                dfd.resolve(that.processMarkup('<div class="durandal-view-404">' + message + '</div>'));
             }).promise();
         }
     };

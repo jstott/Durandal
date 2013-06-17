@@ -1,4 +1,4 @@
-﻿define(['require'], function(require) {
+﻿define(['require', 'jquery'], function(require, $) {
     var isDebugging = false,
         nativeKeys = Object.keys,
         hasOwnProperty = Object.prototype.hasOwnProperty,
@@ -73,8 +73,12 @@
         } catch (ignore) { }
     };
 
-    var logError = function(error) {
-        throw error;
+    var logError = function(error, id) {
+        if(error instanceof Error){
+            throw error;
+        }
+
+        throw new Error(error, id);
     };
 
     system = {
@@ -111,11 +115,11 @@
 
             obj.__moduleId__ = id;
         },
-        getObjectResolver: function(module) {
+        resolveObject: function(module) {
             if (system.isFunction(module)) {
-                return module;
+                return new module();
             } else {
-                return (function() { return module; });
+                return module;
             }
         },
         debug: function(enable) {
@@ -124,9 +128,9 @@
                 if (isDebugging) {
                     this.log = log;
                     this.error = logError;
-                    this.log('Debug mode enabled.');
+                    this.log('Debug:Enabled');
                 } else {
-                    this.log('Debug mode disabled.');
+                    this.log('Debug:Disabled');
                     this.log = noop;
                     this.error = noop;
                 }
@@ -138,7 +142,7 @@
         error: noop,
         assert: function (condition, message) {
             if (!condition) {
-                system.error(new Error(message || 'Assertion failed.'));
+                system.error(new Error(message || 'Assert:Failed'));
             }
         },
         defer: function(action) {
@@ -158,6 +162,8 @@
                     setTimeout(function() {
                         dfd.resolve.apply(dfd, args);
                     }, 1);
+                }, function(err){
+                    dfd.reject(err);
                 });
             }).promise();
         },

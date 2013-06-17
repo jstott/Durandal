@@ -1,4 +1,4 @@
-﻿define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/events', 'plugins/history'], function(system, app, activator, events, history) {
+﻿define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/events', 'plugins/history', 'knockout'], function(system, app, activator, events, history, ko) {
     var optionalParam = /\((.*?)\)/g;
     var namedParam = /(\(\?)?:\w+/g;
     var splatParam = /\*\w+/g;
@@ -188,7 +188,7 @@
                 ensureActivation(activator.create(), currentActivation, instruction);
             } else {
                 system.acquire(instruction.config.moduleId).then(function(module) {
-                    var instance = new (system.getObjectResolver(module))();
+                    var instance = system.resolveObject(module);
                     ensureActivation(activeItem, instance, instruction);
                 });
             }

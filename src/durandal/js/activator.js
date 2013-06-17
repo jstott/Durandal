@@ -1,4 +1,4 @@
-﻿define(['durandal/system'], function (system) {
+﻿define(['durandal/system', 'knockout'], function (system, ko) {
     var activator;
 
     function ensureSettings(settings) {
@@ -449,6 +449,9 @@
                 }
             }
         },
-        create: createActivator
+        create: createActivator,
+        isActivator:function(object){
+            return object && object.__activator__;
+        }
     };
 });

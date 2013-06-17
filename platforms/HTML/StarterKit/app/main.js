@@ -3,7 +3,16 @@
         'text': '../lib/require/text',
         'durandal':'../lib/durandal/js',
         'plugins' : '../lib/durandal/js/plugins',
-        'transitions' : '../lib/durandal/js/transitions'
+        'transitions' : '../lib/durandal/js/transitions',
+        'knockout': '../lib/knockout/knockout-2.2.1',
+        'bootstrap': '../lib/bootstrap/js/bootstrap',
+        'jquery': '../lib/jquery/jquery-1.9.1'
+    },
+    shim: {
+        'bootstrap': {
+            deps: ['jquery'],
+            exports: '$.support.transition' // just picked one
+       }
     }
 });
 
@@ -13,6 +22,12 @@ define(['durandal/system', 'durandal/app', 'durandal/viewLocator'],  function (s
     //>>excludeEnd("build");
 
     app.title = 'Durandal Starter Kit';
+
+    app.plugins = {
+        dialog: true,
+        widget: true
+    };
+
     app.start().then(function() {
         //Replace 'viewmodels' in the moduleId with 'views' to locate the view.
         //Look for partial views in a 'views' folder in the root.

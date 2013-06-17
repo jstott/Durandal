@@ -1,4 +1,4 @@
-﻿define(['durandal/viewLocator', 'durandal/viewModelBinder', 'durandal/viewEngine', 'durandal/system'], function (viewLocator, viewModelBinder, viewEngine, system) {
+﻿define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', 'durandal/viewEngine', 'durandal/activator', 'jquery', 'knockout'], function (system, viewLocator, viewModelBinder, viewEngine, activator, $, ko) {
     var dummyModel = {},
         activeViewAttributeName = 'data-active-view',
         composition,
@@ -32,7 +32,9 @@
         compositionCount--;
 
         if (compositionCount === 0) {
-            for (var i = 0; i < documentAttachedCallbacks.length; i++) {
+            var i = documentAttachedCallbacks.length;
+
+            while(i--) {
                 documentAttachedCallbacks[i]();
             }
 
@@ -223,7 +225,7 @@
         getSettings: function (valueAccessor, element) {
             var value = valueAccessor(),
                 settings = ko.utils.unwrapObservable(value) || {},
-                isActivator = value && value.__activator__,
+                activatorPresent = activator.isActivator(value),
                 moduleId;
 
             if (system.isString(settings)) {
@@ -236,8 +238,8 @@
                     model: settings
                 };
             } else {
-                if(!isActivator && settings.model) {
-                    isActivator = settings.model.__activator__;
+                if(!activatorPresent && settings.model) {
+                    activatorPresent = activator.isActivator(settings.model);
                 }
 
                 for(var attrName in settings) {
@@ -245,7 +247,7 @@
                 }
             }
 
-            if (isActivator) {
+            if (activatorPresent) {
                 settings.activate = false;
             } else if (settings.activate === undefined) {
                 settings.activate = true;
@@ -332,7 +334,7 @@
                 }
             } else if (system.isString(settings.model)) {
                 system.acquire(settings.model).then(function (module) {
-                    settings.model = new (system.getObjectResolver(module))();
+                    settings.model = system.resolveObject(module);
                     composition.inject(settings);
                 });
             } else {
