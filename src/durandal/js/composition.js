@@ -1,9 +1,13 @@
-﻿define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', 'durandal/viewEngine', 'durandal/activator', 'jquery', 'knockout'], function (system, viewLocator, viewModelBinder, viewEngine, activator, $, ko) {
+define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', 'durandal/viewEngine', 'durandal/activator', 'jquery', 'knockout'], function (system, viewLocator, viewModelBinder, viewEngine, activator, $, ko) {
     var dummyModel = {},
         activeViewAttributeName = 'data-active-view',
         composition,
-        documentAttachedCallbacks = [],
-        compositionCount = 0;
+        compositionCompleteCallbacks = [],
+        compositionCount = 0,
+        compositionDataKey = 'durandal-composition-data',
+        partAttributeName = 'data-part',
+        partAttributeSelector = '[' + partAttributeName + ']',
+        bindableSettings = ['model', 'view', 'transition', 'area', 'strategy', 'activationData'];
 
     function getHostState(parent) {
         var elements = [];
@@ -27,18 +31,18 @@
 
         return state;
     }
-    
+
     function endComposition() {
         compositionCount--;
 
         if (compositionCount === 0) {
-            var i = documentAttachedCallbacks.length;
+            var i = compositionCompleteCallbacks.length;
 
             while(i--) {
-                documentAttachedCallbacks[i]();
+                compositionCompleteCallbacks[i]();
             }
 
-            documentAttachedCallbacks = [];
+            compositionCompleteCallbacks = [];
         }
     }
 
@@ -64,7 +68,7 @@
         }
     }
 
-    function triggerViewAttached() {
+    function triggerAttach() {
         var context = this;
 
         if (context.activeView) {
@@ -72,41 +76,41 @@
         }
 
         if (context.child) {
-            if (context.model && context.model.viewAttached) {
-                if (context.composingNewView || context.alwaysAttachView) {
-                    context.model.viewAttached(context.child, context);
+            if (context.model && context.model.attachedToParent) {
+                if (context.composingNewView || context.alwaysTriggerAttach) {
+                    context.model.attachedToParent(context.child, context.parent, context);
                 }
             }
-            
+
+            if (context.attachedToParent) {
+                context.attachedToParent(context.child, context.parent, context);
+            }
+
             context.child.setAttribute(activeViewAttributeName, true);
 
             if (context.composingNewView && context.model) {
-                if (context.model.documentAttached) {
-                    composition.current.completed(function () {
-                        context.model.documentAttached(context.child, context);
+                if (context.model.compositionComplete) {
+                    composition.current.complete(function () {
+                        context.model.compositionComplete(context.child, context);
                     });
                 }
 
-                if (context.model.documentDetached) {
-                    composition.documentDetached(context.child, function () {
-                        context.model.documentDetached(context.child, context);
+                if (context.model.detachedFromDocument) {
+                    ko.utils.domNodeDisposal.addDisposeCallback(context.child, function () {
+                        context.model.detachedFromDocument(context.child, context);
                     });
                 }
             }
-        }
-        
-        if (context.afterCompose) {
-            context.afterCompose(context.child, context);
-        }
 
-        if (context.documentAttached) {
-            composition.current.completed(function () {
-                context.documentAttached(context.child, context);
-            });
+            if (context.compositionComplete) {
+                composition.current.complete(function () {
+                    context.compositionComplete(context.child, context);
+                });
+            }
         }
 
         endComposition();
-        context.triggerViewAttached = system.noop;
+        context.triggerAttach = system.noop;
     }
 
     function shouldTransition(context) {
@@ -126,11 +130,29 @@
                     return currentViewId != newViewId;
                 }
             }
-            
+
             return true;
         }
-        
+
         return false;
+    }
+
+    function cloneNodes(nodesArray) {
+        for (var i = 0, j = nodesArray.length, newNodesArray = []; i < j; i++) {
+            var clonedNode = nodesArray[i].cloneNode(true);
+            newNodesArray.push(clonedNode);
+        }
+        return newNodesArray;
+    }
+
+    function replaceParts(context){
+        var parts = cloneNodes(context.parts);
+        var replacementParts = composition.getParts(parts);
+        var standardParts = composition.getParts(context.child);
+
+        for (var partId in replacementParts) {
+            $(standardParts[partId]).replaceWith(replacementParts[partId]);
+        }
     }
 
     composition = {
@@ -138,13 +160,39 @@
             return 'transitions/' + name;
         },
         current: {
-            completed: function (callback) {
-                documentAttachedCallbacks.push(callback);
+            complete: function (callback) {
+                compositionCompleteCallbacks.push(callback);
             }
         },
-        documentDetached: function (element, callback) {
-            ko.utils.domNodeDisposal.addDisposeCallback(element, callback);
+        getParts: function(elements) {
+            var parts = {};
+
+            if (!system.isArray(elements)) {
+                elements = [elements];
+            }
+
+            for (var i = 0; i < elements.length; i++) {
+                var element = elements[i];
+
+                if (element.getAttribute) {
+                    var id = element.getAttribute(partAttributeName);
+                    if (id) {
+                        parts[id] = element;
+                    }
+
+                    var childParts = $(partAttributeSelector, element)
+                        .not($('[data-bind] ' + partAttributeSelector, element));
+
+                    for (var j = 0; j < childParts.length; j++) {
+                        var part = childParts.get(j);
+                        parts[part.getAttribute(partAttributeName)] = part;
+                    }
+                }
+            }
+
+            return parts;
         },
+        cloneNodes:cloneNodes,
         switchContent: function (context) {
             context.transition = context.transition || this.defaultTransitionName;
 
@@ -152,7 +200,7 @@
                 var transitionModuleId = this.convertTransitionToModuleId(context.transition);
                 system.acquire(transitionModuleId).then(function (transition) {
                     context.transition = transition;
-                    transition(context).then(function () { context.triggerViewAttached(); });
+                    transition(context).then(function () { context.triggerAttach(); });
                 });
             } else {
                 if (context.child != context.activeView) {
@@ -179,7 +227,7 @@
                     }
                 }
 
-                context.triggerViewAttached();
+                context.triggerAttach();
             }
         },
         bindAndShow: function (child, context) {
@@ -198,6 +246,10 @@
 
                 if (context.preserveContext && context.bindingContext) {
                     if (context.composingNewView) {
+                        if(context.parts){
+                            replaceParts(context);
+                        }
+
                         viewModelBinder.bindContext(context.bindingContext, child, context.model);
                     }
                 } else if (child) {
@@ -212,6 +264,11 @@
                             });
                             return;
                         }
+
+                        if(context.parts){
+                            replaceParts(context);
+                        }
+
                         viewModelBinder.bind(modelToBind, child);
                     }
                 }
@@ -229,21 +286,39 @@
                 moduleId;
 
             if (system.isString(settings)) {
+                if (viewEngine.isViewUrl(settings)) {
+                    settings = {
+                        view: settings
+                    };
+                } else {
+                    settings = {
+                        model: settings,
+                        activate: true
+                    };
+                }
+
                 return settings;
             }
 
             moduleId = system.getModuleId(settings);
-            if(moduleId) {
+            if (moduleId) {
                 settings = {
-                    model: settings
+                    model: settings,
+                    activate: true
                 };
-            } else {
-                if(!activatorPresent && settings.model) {
-                    activatorPresent = activator.isActivator(settings.model);
-                }
 
-                for(var attrName in settings) {
+                return settings;
+            }
+
+            if(!activatorPresent && settings.model) {
+                activatorPresent = activator.isActivator(settings.model);
+            }
+
+            for (var attrName in settings) {
+                if (ko.utils.arrayIndexOf(bindableSettings, attrName) != -1) {
                     settings[attrName] = ko.utils.unwrapObservable(settings[attrName]);
+                } else {
+                    settings[attrName] = settings[attrName];
                 }
             }
 
@@ -286,35 +361,18 @@
                 this.executeStrategy(context);
             }
         },
-        compose: function (element, settings, bindingContext) {
+        compose: function (element, settings, bindingContext, fromBinding) {
             compositionCount++;
 
-            if (system.isString(settings)) {
-                if (viewEngine.isViewUrl(settings)) {
-                    settings = {
-                        view: settings
-                    };
-                } else {
-                    settings = {
-                        model: settings,
-                        activate: true
-                    };
-                }
-            }
-
-            var moduleId = system.getModuleId(settings);
-            if (moduleId) {
-                settings = {
-                    model: settings,
-                    activate: true
-                };
+            if(!fromBinding){
+                settings = composition.getSettings(function() { return settings; }, element);
             }
 
             var hostState = getHostState(element);
 
             settings.activeView = hostState.activeView;
             settings.parent = element;
-            settings.triggerViewAttached = triggerViewAttached;
+            settings.triggerAttach = triggerAttach;
             settings.bindingContext = bindingContext;
 
             if (settings.cacheViews && !settings.viewElements) {
@@ -344,9 +402,37 @@
     };
 
     ko.bindingHandlers.compose = {
+        init: function() {
+            return { controlsDescendantBindings: true };
+        },
         update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-            var settings = composition.getSettings(valueAccessor);
-            composition.compose(element, settings, bindingContext);
+            var settings = composition.getSettings(valueAccessor, element);
+            if(settings.mode){
+                var data = ko.utils.domData.get(element, compositionDataKey);
+                if(!data){
+                    var childNodes = ko.virtualElements.childNodes(element);
+                    data = {};
+
+                    if(settings.mode === 'inline'){
+                        data.view = viewEngine.ensureSingleElement(childNodes);
+                    }else if(settings.mode === 'templated'){
+                        data.parts = cloneNodes(childNodes);
+                    }
+
+                    ko.virtualElements.emptyNode(element);
+                    ko.utils.domData.set(element, compositionDataKey, data);
+                }
+
+                if(settings.mode === 'inline'){
+                    settings.view = data.view.cloneNode(true);
+                }else if(settings.mode === 'templated'){
+                    settings.parts = data.parts;
+                }
+
+                settings.preserveContext = true;
+            }
+
+            composition.compose(element, settings, bindingContext, true);
         }
     };
 
