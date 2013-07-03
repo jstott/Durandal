@@ -20,7 +20,7 @@
     MessageBox.defaultTitle = app.title || 'Application';
     MessageBox.defaultOptions = ['Ok'];
     MessageBox.defaultViewMarkup = [
-        '<div class="messageBox">',
+        '<div data-view="plugins/messageBox" class="messageBox">',
             '<div class="modal-header">',
                 '<h3 data-bind="text: title"></h3>',
             '</div>',
@@ -72,8 +72,8 @@
                 activate:false
             };
 
-            if (dialogContext.attachedToParent) {
-                settings.attachedToParent = dialogContext.attachedToParent;
+            if (dialogContext.attached) {
+                settings.attached = dialogContext.attached;
             }
 
             if (dialogContext.compositionComplete) {

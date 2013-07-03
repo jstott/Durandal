@@ -1,9 +1,10 @@
-﻿define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/events', 'durandal/composition', 'plugins/history', 'knockout'], function(system, app, activator, events, composition, history, ko) {
+﻿define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/events', 'durandal/composition', 'plugins/history', 'knockout', 'jquery'], function(system, app, activator, events, composition, history, ko, $) {
     var optionalParam = /\((.*?)\)/g;
     var namedParam = /(\(\?)?:\w+/g;
     var splatParam = /\*\w+/g;
     var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
     var startDeferred, rootRouter;
+    var trailingSlash = /\/$/;
 
     function routeStringToRegExp(routeString) {
         routeString = routeString.replace(escapeRegExp, '\\$&')
@@ -50,6 +51,9 @@
         };
 
         events.includeIn(router);
+        activeItem.settings.areSameItem = function () {
+            return false;
+        };
 
         function completeNavigation(instance, instruction) {
             system.log('Navigation Complete', instance, instruction);
@@ -69,6 +73,8 @@
                 router.updateDocumentTitle(instance, instruction);
             }
 
+            rootRouter.explicitNavigation = false;
+            rootRouter.navigatingBack = false;
             router.trigger('router:navigation:complete', instance, instruction, router);
         }
 
@@ -80,6 +86,8 @@
             }
 
             isProcessing(false);
+            rootRouter.explicitNavigation = false;
+            rootRouter.navigatingBack = false;
             router.trigger('router:navigation:cancelled', instance, instruction, router);
         }
 
@@ -87,11 +95,19 @@
             system.log('Navigation Redirecting');
 
             isProcessing(false);
+            rootRouter.explicitNavigation = false;
+            rootRouter.navigatingBack = false;
             router.navigate(url, { trigger: true, replace: true });
         }
 
         function activateRoute(activator, instance, instruction) {
-            activator.activateItem(instance, instruction.params).then(function(succeeded) {
+            rootRouter.navigatingBack = !rootRouter.explicitNavigation && currentActivation != instruction.fragment;
+
+            if(rootRouter.navigatingBack){
+                system.log('Navigating Back');
+            }
+
+            activator.activateItem(instance, instruction.params).then(function(succeeded, failData) {
                 if (succeeded) {
                     var previousActivation = currentActivation;
                     completeNavigation(instance, instruction);
@@ -105,9 +121,11 @@
                     }
 
                     if (previousActivation == instance) {
-                        router.attachedToParent();
+                        router.attached();
                     }
-                } else {
+                } else if(failData.redirect){
+                    redirect(failData.redirect);
+                }else{
                     cancelNavigation(instance, instruction);
                 }
 
@@ -211,12 +229,15 @@
                 params[i] = current ? decodeURIComponent(current) : null;
             }
 
-            var queryObject = router.parseQueryString(queryString);
-            if (queryObject) {
-                params.push(queryObject);
+            var queryParams = router.parseQueryString(queryString);
+            if (queryParams) {
+                params.push(queryParams);
             }
 
-            return params;
+            return {
+                params:params,
+                queryParams:queryParams
+            };
         }
 
         function mapRoute(config) {
@@ -236,11 +257,13 @@
             router.routes.push(config);
 
             router.route(config.routePattern, function(fragment, queryString) {
+                var paramInfo = createParams(config.routePattern, fragment, queryString);
                 queueInstruction({
                     fragment: fragment,
                     queryString:queryString,
                     config: config,
-                    params: createParams(config.routePattern, fragment, queryString)
+                    params: paramInfo.params,
+                    queryParams:paramInfo.queryParams
                 });
             });
 
@@ -301,6 +324,8 @@
                 queryString = fragment.substr(queryIndex + 1);
             }
 
+            coreFragment = coreFragment.replace(trailingSlash, '');
+
             for (var i = 0; i < handlers.length; i++) {
                 var current = handlers[i];
                 if (current.routePattern.test(coreFragment)) {
@@ -325,6 +350,7 @@
         };
 
         router.navigate = function(fragment, options) {
+            rootRouter.explicitNavigation = true;
             history.navigate(fragment, options);
         };
 
@@ -332,10 +358,10 @@
             history.history.back();
         };
 
-        router.attachedToParent = function() {
+        router.attached = function() {
             setTimeout(function() {
                 isProcessing(false);
-                router.trigger('router:navigation:attached-to-parent', currentActivation, currentInstruction, router);
+                router.trigger('router:navigation:attached', currentActivation, currentInstruction, router);
                 dequeueInstruction();
             }, 10);
         };
@@ -413,6 +439,7 @@
             var routePattern = routeStringToRegExp(route);
             
             router.route(routePattern, function (fragment, queryString) {
+                var paramInfo = createParams(routePattern, fragment, queryString);
                 var instruction = {
                     fragment: fragment,
                     queryString: queryString,
@@ -420,7 +447,8 @@
                         route: route,
                         routePattern: routePattern
                     },
-                    params: createParams(routePattern, fragment, queryString)
+                    params: paramInfo.params,
+                    queryParams: paramInfo.queryParams
                 };
 
                 if (!config) {
@@ -500,12 +528,17 @@
     };
 
     rootRouter = createRouter();
+    rootRouter.explicitNavigation = false;
+    rootRouter.navigatingBack = false;
 
     rootRouter.activate = function(options) {
         return system.defer(function(dfd) {
             startDeferred = dfd;
             rootRouter.options = system.extend({ routeHandler: rootRouter.loadUrl }, rootRouter.options, options);
             history.activate(rootRouter.options);
+            $(document).on('click', 'a', function(){
+                rootRouter.explicitNavigation = true;
+            });
         }).promise();
     };
 
@@ -524,14 +557,14 @@
                 if (settings.__router__) {
                     settings = {
                         model:settings.activeItem(),
-                        attachedToParent:settings.attachedToParent,
+                        attached:settings.attached,
                         compositionComplete:settings.compositionComplete,
                         activate: false
                     };
                 } else {
                     var theRouter = ko.utils.unwrapObservable(settings.router || viewModel.router) || rootRouter;
                     settings.model = theRouter.activeItem();
-                    settings.attachedToParent = theRouter.attachedToParent;
+                    settings.attached = theRouter.attached;
                     settings.compositionComplete = theRouter.compositionComplete;
                     settings.activate = false;
                 }

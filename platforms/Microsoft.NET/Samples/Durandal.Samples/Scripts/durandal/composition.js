@@ -34,6 +34,10 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
             child = ko.virtualElements.nextSibling(child);
         }
 
+        if(!state.activeView){
+            state.activeView = elements[0];
+        }
+
         return state;
     }
 
@@ -51,8 +55,10 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
         }
     }
 
-    function tryActivate(context, successCallback) {
-        if (context.activate && context.model && context.model.activate) {
+    function tryActivate(context, successCallback, skipActivation) {
+        if(skipActivation){
+            successCallback();
+        } else if (context.activate && context.model && context.model.activate) {
             var result;
 
             if(system.isArray(context.activationData)) {
@@ -81,14 +87,14 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
         }
 
         if (context.child) {
-            if (context.model && context.model.attachedToParent) {
+            if (context.model && context.model.attached) {
                 if (context.composingNewView || context.alwaysTriggerAttach) {
-                    context.model.attachedToParent(context.child, context.parent, context);
+                    context.model.attached(context.child, context.parent, context);
                 }
             }
 
-            if (context.attachedToParent) {
-                context.attachedToParent(context.child, context.parent, context);
+            if (context.attached) {
+                context.attached(context.child, context.parent, context);
             }
 
             context.child.setAttribute(activeViewAttributeName, true);
@@ -100,9 +106,9 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
                     });
                 }
 
-                if (context.model.detachedFromDocument) {
+                if (context.model.detached) {
                     ko.utils.domNodeDisposal.addDisposeCallback(context.child, function () {
-                        context.model.detachedFromDocument(context.child, context);
+                        context.model.detached(context.child, context);
                     });
                 }
             }
@@ -160,6 +166,24 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
         }
     }
 
+    function removePreviousView(parent){
+        var children = ko.virtualElements.childNodes(parent), i, len;
+
+        if(!system.isArray(children)){
+            var arrayChildren = [];
+
+            for(i = 0, len = children.length; i < len; i++){
+                arrayChildren[i] = children[i];
+            }
+
+            children = arrayChildren;
+        }
+
+        for(i = 1,len = children.length; i < len; i++){
+            ko.removeNode(children[i]);
+        }
+    }
+
     composition = {
         convertTransitionToModuleId: function (name) {
             return 'transitions/' + name;
@@ -169,40 +193,45 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
                 compositionCompleteCallbacks.push(callback);
             }
         },
-        addBindingHandler:function(name, config){
+        addBindingHandler:function(name, config, initOptionsFactory){
             var key,
                 dataKey = 'composition-handler-' + name,
-                handler = ko.bindingHandlers[name] = {
-                    init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-                        var data = {
-                            trigger:ko.observable(null)
-                        };
+                handler;
 
-                        composition.current.complete(function(){
-                            if(config.init){
-                                config.init(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext);
-                            }
+            config = config || ko.bindingHandlers[name];
+            initOptionsFactory = initOptionsFactory || function(){ return undefined;  };
 
-                            if(config.update){
-                                ko.utils.domData.set(element, dataKey, config);
-                                data.trigger('trigger');
-                            }
-                        });
+            handler = ko.bindingHandlers[name] = {
+                init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+                    var data = {
+                        trigger:ko.observable(null)
+                    };
 
-                        ko.utils.domData.set(element, dataKey, data);
-
-                        return { controlsDescendantBindings: true };
-                    },
-                    update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-                        var data = ko.utils.domData.get(element, dataKey);
-
-                        if(data.update){
-                            data.update(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext);
-                        }else{
-                            data.trigger();
+                    composition.current.complete(function(){
+                        if(config.init){
+                            config.init(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext);
                         }
+
+                        if(config.update){
+                            ko.utils.domData.set(element, dataKey, config);
+                            data.trigger('trigger');
+                        }
+                    });
+
+                    ko.utils.domData.set(element, dataKey, data);
+
+                    return initOptionsFactory(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext);
+                },
+                update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+                    var data = ko.utils.domData.get(element, dataKey);
+
+                    if(data.update){
+                        data.update(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext);
+                    }else{
+                        data.trigger();
                     }
-                };
+                }
+            };
 
             for (key in config) {
                 if (key !== "init" && key !== "update") {
@@ -239,19 +268,47 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
             return parts;
         },
         cloneNodes:cloneNodes,
-        switchContent: function (context) {
+        finalize: function (context) {
             context.transition = context.transition || this.defaultTransitionName;
 
-            if (shouldTransition(context)) {
+            if(!context.child && !context.activeView){
+                if (!context.cacheViews) {
+                    ko.virtualElements.emptyNode(context.parent);
+                }
+
+                context.triggerAttach();
+            }else if (shouldTransition(context)) {
                 var transitionModuleId = this.convertTransitionToModuleId(context.transition);
+
                 system.acquire(transitionModuleId).then(function (transition) {
                     context.transition = transition;
-                    transition(context).then(function () { context.triggerAttach(); });
+
+                    transition(context).then(function () {
+                        if (!context.cacheViews) {
+                            if(!context.child){
+                                ko.virtualElements.emptyNode(context.parent);
+                            }else{
+                                removePreviousView(context.parent);
+                            }
+                        }else if(context.activeView){
+                            var instruction = viewModelBinder.getBindingInstruction(context.activeView);
+                            if(instruction.cacheViews != undefined && !instruction.cacheViews){
+                                ko.removeNode(context.activeView);
+                            }
+                        }
+
+                        context.triggerAttach();
+                    });
                 });
             } else {
                 if (context.child != context.activeView) {
                     if (context.cacheViews && context.activeView) {
-                        $(context.activeView).css('display', 'none');
+                        var instruction = viewModelBinder.getBindingInstruction(context.activeView);
+                        if(instruction.cacheViews != undefined && !instruction.cacheViews){
+                            ko.removeNode(context.activeView);
+                        }else{
+                            $(context.activeView).hide();
+                        }
                     }
 
                     if (!context.child) {
@@ -259,24 +316,18 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
                             ko.virtualElements.emptyNode(context.parent);
                         }
                     } else {
-                        if (context.cacheViews) {
-                            if (context.composingNewView) {
-                                context.viewElements.push(context.child);
-                                ko.virtualElements.prepend(context.parent, context.child);
-                            } else {
-                                $(context.child).css('display', '');
-                            }
-                        } else {
-                            ko.virtualElements.emptyNode(context.parent);
-                            ko.virtualElements.prepend(context.parent, context.child);
+                        if (!context.cacheViews) {
+                            removePreviousView(context.parent);
                         }
+
+                        $(context.child).show();
                     }
                 }
 
                 context.triggerAttach();
             }
         },
-        bindAndShow: function (child, context) {
+        bindAndShow: function (child, context, skipActivation) {
             context.child = child;
 
             if (context.cacheViews) {
@@ -296,6 +347,9 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
                             replaceParts(context);
                         }
 
+                        $(child).hide();
+                        ko.virtualElements.prepend(context.parent, child);
+
                         viewModelBinder.bindContext(context.bindingContext, child, context.model);
                     }
                 } else if (child) {
@@ -306,7 +360,7 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
                         if (!context.composingNewView) {
                             $(child).remove();
                             viewEngine.createView(child.getAttribute('data-view')).then(function(recreatedView) {
-                                composition.bindAndShow(recreatedView, context);
+                                composition.bindAndShow(recreatedView, context, true);
                             });
                             return;
                         }
@@ -315,12 +369,15 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
                             replaceParts(context);
                         }
 
+                        $(child).hide();
+                        ko.virtualElements.prepend(context.parent, child);
+
                         viewModelBinder.bind(modelToBind, child);
                     }
                 }
 
-                composition.switchContent(context);
-            });
+                composition.finalize(context);
+            }, skipActivation);
         },
         defaultStrategy: function (context) {
             return viewLocator.locateViewForObject(context.model, context.viewElements);
@@ -483,6 +540,28 @@ define(['durandal/system', 'durandal/viewLocator', 'durandal/viewModelBinder', '
     };
 
     ko.virtualElements.allowedBindings.compose = true;
+
+    //hack to prevent ko from disposing our observables before we had the chance to put them in the DOM
+    for (var key in ko.utils) {
+        var val = ko.utils[key];
+        if (!val) {
+            continue;
+        }
+
+        var code = val.toString();
+
+        if (key === 'domNodeIsAttachedToDocument' || code.indexOf('ownerDocument') != -1) {
+            ko.utils[key] = function () {
+                if (compositionCount > 0) {
+                    return true;
+                }
+
+                return val.apply(ko.utils, arguments);
+            };
+
+            break;
+        }
+    }
 
     return composition;
 });
