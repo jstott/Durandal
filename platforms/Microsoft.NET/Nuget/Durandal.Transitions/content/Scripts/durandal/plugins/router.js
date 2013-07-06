@@ -50,7 +50,12 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
             activeItem: activeItem,
             isNavigating: ko.computed(function() {
                 var current = activeItem();
-                return isProcessing() || (current && current.router && current.router.isNavigating());
+                var processing = isProcessing();
+                	var currentRouterIsProcesing = current
+						&& current.router
+						&& current.router != router
+						&& current.router.isNavigating() ? true : false;
+            	return  processing || currentRouterIsProcesing;
             }),
             __router__:true
         };
@@ -339,6 +344,15 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
                 }
             }
 
+            system.log('Route Not Found');
+
+            if (currentInstruction) {
+                history.navigate(currentInstruction.fragment, { trigger:false, replace:true });
+            }
+
+            rootRouter.explicitNavigation = false;
+            rootRouter.navigatingBack = false;
+
             return false;
         };
 
@@ -356,7 +370,7 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
 
         router.navigate = function(fragment, options) {
             rootRouter.explicitNavigation = true;
-            history.navigate(fragment, options);
+            return history.navigate(fragment, options);
         };
 
         router.navigateBack = function() {
