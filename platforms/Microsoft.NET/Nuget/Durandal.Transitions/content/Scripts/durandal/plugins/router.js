@@ -68,15 +68,17 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
         function completeNavigation(instance, instruction) {
             system.log('Navigation Complete', instance, instruction);
 
-            if (currentActivation && currentActivation.__moduleId__) {
-                router.trigger('router:navigatedFrom:' + currentActivation.__moduleId__);
+            var fromModuleId = system.getModuleId(currentActivation);
+            if (fromModuleId) {
+                router.trigger('router:navigation:from:' + fromModuleId);
             }
 
             currentActivation = instance;
             currentInstruction = instruction;
 
-            if (currentActivation && currentActivation.__moduleId__) {
-                router.trigger('router:navigatedTo:' + currentActivation.__moduleId__);
+            var toModuleId = system.getModuleId(currentActivation);
+            if (toModuleId) {
+                router.trigger('router:navigation:to:' + toModuleId);
             }
 
             if (!hasChildRouter(instance)) {
@@ -116,6 +118,8 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
             if(rootRouter.navigatingBack){
                 system.log('Navigating Back');
             }
+
+            router.trigger('router:route:activating', instance, instruction);
 
             activator.activateItem(instance, instruction.params).then(function(succeeded, failData) {
                 if (succeeded) {
