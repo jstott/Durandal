@@ -1,4 +1,16 @@
-﻿define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/events', 'durandal/composition', 'plugins/history', 'knockout', 'jquery'], function(system, app, activator, events, composition, history, ko, $) {
+﻿/**
+ * Connects the history module's url and history tracking support to Durandal's activation and composition engine allowing you to easily build navigation-style applications.
+ * @module router
+ * @requires system
+ * @requires app
+ * @requires activator
+ * @requires events
+ * @requires composition
+ * @requires history
+ * @requires knockout
+ * @requires jquery
+ */
+define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/events', 'durandal/composition', 'plugins/history', 'knockout', 'jquery'], function(system, app, activator, events, composition, history, ko, $) {
     var optionalParam = /\((.*?)\)/g;
     var namedParam = /(\(\?)?:\w+/g;
     var splatParam = /\*\w+/g;
@@ -31,6 +43,65 @@
         return str.indexOf(suffix, str.length - suffix.length) !== -1;
     }
 
+    /**
+     * @class Router
+     * @uses Events
+     */
+
+    /**
+     * Triggered when the navigation logic has completed.
+     * @event router:navigation:complete
+     * @param {object} instance The activated instance.
+     * @param {object} instruction The routing instruction.
+     * @param {Router} router The router.
+     */
+
+    /**
+     * Triggered when the navigation has been cancelled.
+     * @event router:navigation:cancelled
+     * @param {object} instance The activated instance.
+     * @param {object} instruction The routing instruction.
+     * @param {Router} router The router.
+     */
+
+    /**
+     * Triggered right before a route is activated.
+     * @event router:route:activating
+     * @param {object} instance The activated instance.
+     * @param {object} instruction The routing instruction.
+     * @param {Router} router The router.
+     */
+
+    /**
+     * Triggered right before a route is configured.
+     * @event router:route:before-config
+     * @param {object} config The route config.
+     * @param {Router} router The router.
+     */
+
+    /**
+     * Triggered just after a route is configured.
+     * @event router:route:after-config
+     * @param {object} config The route config.
+     * @param {Router} router The router.
+     */
+
+    /**
+     * Triggered when the view for the activated instance is attached.
+     * @event router:navigation:attached
+     * @param {object} instance The activated instance.
+     * @param {object} instruction The routing instruction.
+     * @param {Router} router The router.
+     */
+
+    /**
+     * Triggered when the composition that the activated instance participates in is complete.
+     * @event router:navigation:composition-complete
+     * @param {object} instance The activated instance.
+     * @param {object} instruction The routing instruction.
+     * @param {Router} router The router.
+     */
+
     var createRouter = function() {
         var queue = [],
             isProcessing = ko.observable(false),
@@ -39,10 +110,30 @@
             activeItem = activator.create();
 
         var router = {
+            /**
+             * The route handlers that are registered. Each handler consists of a `routePattern` and a `callback`.
+             * @property {object[]} handlers
+             */
             handlers: [],
+            /**
+             * The route configs that are registered.
+             * @property {object[]} routes
+             */
             routes: [],
+            /**
+             * The route configurations that have been designated as displayable in a nav ui (nav:true).
+             * @property {KnockoutObservableArray} navigationModel
+             */
             navigationModel: ko.observableArray([]),
+            /**
+             * The active item/screen based on the current navigation state.
+             * @property {Activator} activeItem
+             */
             activeItem: activeItem,
+            /**
+             * Indicates that the router (or a child router) is currently in the process of navigating.
+             * @property {KnockoutComputed} isNavigating
+             */
             isNavigating: ko.computed(function() {
                 var current = activeItem();
                 var processing = isProcessing();
@@ -56,6 +147,7 @@
         };
 
         events.includeIn(router);
+
         activeItem.settings.areSameItem = function () {
             return false;
         };
@@ -109,12 +201,7 @@
 
         function activateRoute(activator, instance, instruction) {
             rootRouter.navigatingBack = !rootRouter.explicitNavigation && currentActivation != instruction.fragment;
-
-            if(rootRouter.navigatingBack){
-                system.log('Navigating Back');
-            }
-
-            router.trigger('router:route:activating', instance, instruction);
+            router.trigger('router:route:activating', instance, instruction, router);
 
             activator.activateItem(instance, instruction.params).then(function(succeeded, failData) {
                 if (succeeded) {
@@ -285,6 +372,12 @@
             });
         }
 
+        /**
+         * Parses a query string into an object.
+         * @method parseQueryString
+         * @param {string} queryString The query string to parse.
+         * @return {object} An object keyed according to the query string parameters.
+         */
         router.parseQueryString = function (queryString) {
             var queryObject, pairs;
 
@@ -313,15 +406,22 @@
             return queryObject;
         };
 
-        // Add a route to be tested when the fragment changes. Routes added later
-        // may override previous routes.
+        /**
+         * Add a route to be tested when the url fragment changes.
+         * @method route
+         * @param {RegEx} routePattern The route pattern to test against.
+         * @param {function} callback The callback to execute when the route pattern is matched.
+         */
         router.route = function(routePattern, callback) {
             router.handlers.push({ routePattern: routePattern, callback: callback });
         };
 
-        // Attempt to load the current URL fragment. If a route succeeds with a
-        // match, returns `true`. If no defined routes matches the fragment,
-        // returns `false`.
+        /**
+         * Attempt to load the specified URL fragment. If a route succeeds with a match, returns `true`. If no defined routes matches the fragment, returns `false`.
+         * @method loadUrl
+         * @param {string} fragment The URL fragment to find a match for.
+         * @return {boolean} True if a match was found, false otherwise.
+         */
         router.loadUrl = function(fragment) {
             var handlers = router.handlers,
                 queryString = null,
@@ -355,6 +455,12 @@
             return false;
         };
 
+        /**
+         * Updates the document title based on the activated module instance, the routing instruction and the app.title.
+         * @method updateDocumentTitle
+         * @param {object} instance The activated module.
+         * @param {object} instruction The routing instruction associated with the action. It has a `config` property that references the original route mapping config.
+         */
         router.updateDocumentTitle = function(instance, instruction) {
             if (instruction.config.title) {
                 if (app.title) {
@@ -367,11 +473,27 @@
             }
         };
 
+        /**
+         * Save a fragment into the hash history, or replace the URL state if the
+         * 'replace' option is passed. You are responsible for properly URL-encoding
+         * the fragment in advance.
+         * The options object can contain `trigger: true` if you wish to have the
+         * route callback be fired (not usually desirable), or `replace: true`, if
+         * you wish to modify the current URL without adding an entry to the history.
+         * @method navigate
+         * @param {string} fragment The url fragment to navigate to.
+         * @param {object|boolean} options An options object with optional trigger and replace flags. You can also pass a boolean directly to set the trigger option.
+         * @return {boolean} Returns true/false from loading the url.
+         */
         router.navigate = function(fragment, options) {
             rootRouter.explicitNavigation = true;
             return history.navigate(fragment, options);
         };
 
+        /**
+         * Navigates back in the browser history.
+         * @method navigateBack
+         */
         router.navigateBack = function() {
             history.history.back();
         };
@@ -388,23 +510,49 @@
             router.trigger('router:navigation:composition-complete', currentActivation, currentInstruction, router);
         };
 
+        /**
+         * Converts a route to a hash suitable for binding to a link's href.
+         * @method convertRouteToHash
+         * @param {string} route
+         * @return {string} The hash.
+         */
         router.convertRouteToHash = function(route) {
             return "#" + route;
         };
 
+        /**
+         * Converts a route to a module id. This is only called if no module id is supplied as part of the route mapping.
+         * @method convertRouteToModuleId
+         * @param {string} route
+         * @return {string} The module id.
+         */
         router.convertRouteToModuleId = function(route) {
             return stripParametersFromRoute(route);
         };
 
+        /**
+         * Converts a route to a displayable title. This is only callef if no title is specified as part of the route mapping.
+         * @method convertRouteToTitle
+         * @param {string} route
+         * @return {string} The title.
+         */
         router.convertRouteToTitle = function(route) {
             var value = stripParametersFromRoute(route);
             return value.substring(0, 1).toUpperCase() + value.substring(1);
         };
 
-        // Manually bind a single named route to a module. For example:
-        //
-        //     router.map('search/:query/p:num', 'viewmodels/search');
-        //
+        /**
+         * Maps route patterns to modules.
+         * @method map
+         * @param {string|object|object[]} route A route, config or array of configs.
+         * @param {object} [config] The config for the specified route.
+         * @chainable
+         * @example
+         router.map([
+            { route: '', title:'Home', moduleId: 'homeScreen', nav: true },
+            { route: 'customer/:id', moduleId: 'customerDetails'}
+         ]);
+         */
         router.map = function(route, config) {
             if (system.isArray(route)) {
                 for (var i = 0; i < route.length; i++) {
@@ -429,6 +577,12 @@
             return mapRoute(config);
         };
 
+        /**
+         * Builds an observable array designed to bind a navigation UI to. The model will exist in the `navigationModel` property.
+         * @method buildNavigationModel
+         * @param {number} defaultOrder The default order to use for navigation visible routes that don't specify an order. The defualt is 100.
+         * @chainable
+         */
         router.buildNavigationModel = function(defaultOrder) {
             var nav = [], routes = router.routes;
             defaultOrder = defaultOrder || 100;
@@ -452,6 +606,14 @@
             return router;
         };
 
+        /**
+         * Configures how the router will handle unknown routes.
+         * @method mapUnknownRoutes
+         * @param {string|function} [config] If not supplied, then the router will map routes to modules with the same name.
+         * If a string is supplied, it represents the module id to route all unknown routes to.
+         * Finally, if config is a function, it will be called back with the route instruction containing the route info. The function can then modify the instruction by adding a moduleId and the router will take over from there.
+         * @chainable
+         */
         router.mapUnknownRoutes = function(config) {
             var route = "*catchall";
             var routePattern = routeStringToRegExp(route);
@@ -497,12 +659,21 @@
             return router;
         };
 
+        /**
+         * Resets the router by removing handlers, routes and previously configured options.
+         * @method reset
+         */
         router.reset = function() {
             router.handlers = [];
             router.routes = [];
             delete router.options;
         };
 
+        /**
+         * Makes all configured routes and/or module ids relative to a certain base url.
+         * @method makeRelative
+         * @param {string|object} settings If string, the value is used as the base for routes and module ids. If an object, you can specify route and/or moduleId separately.
+         */
         router.makeRelative = function(settings){
             if(system.isString(settings)){
                 settings = {
@@ -536,6 +707,11 @@
             return this;
         };
 
+        /**
+         * Creates a child router.
+         * @method createChildRouter
+         * @return {Router} The child router.
+         */
         router.createChildRouter = function() {
             var childRouter = createRouter();
             childRouter.parent = router;
@@ -545,10 +721,20 @@
         return router;
     };
 
+    /**
+     * @class RouterModule
+     * @extends Router
+     * @static
+     */
     rootRouter = createRouter();
     rootRouter.explicitNavigation = false;
     rootRouter.navigatingBack = false;
 
+    /**
+     * Activates the router and the underlying history tracking mechanism.
+     * @method activate
+     * @return {Promise} A promise that resolves when the router is ready.
+     */
     rootRouter.activate = function(options) {
         return system.defer(function(dfd) {
             startDeferred = dfd;
@@ -560,10 +746,18 @@
         }).promise();
     };
 
+    /**
+     * Disable history, perhaps temporarily. Not useful in a real app, but possibly useful for unit testing Routers.
+     * @method deactivate
+     */
     rootRouter.deactivate = function() {
         history.deactivate();
     };
 
+    /**
+     * Installs the router's custom ko binding handler.
+     * @method install
+     */
     rootRouter.install = function(){
         ko.bindingHandlers.router = {
             init: function() {
