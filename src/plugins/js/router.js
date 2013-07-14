@@ -43,6 +43,24 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
         return str.indexOf(suffix, str.length - suffix.length) !== -1;
     }
 
+    function compareArrays(first, second) {
+        if (!first || !second){
+            return false;
+        }
+
+        if (first.length != second.length) {
+            return false;
+        }
+
+        for (var i = 0, len = first.length; i < len; i++) {
+            if (first[i] != second[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * @class Router
      * @uses Events
@@ -148,7 +166,11 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
 
         events.includeIn(router);
 
-        activeItem.settings.areSameItem = function () {
+        activeItem.settings.areSameItem = function (currentItem, newItem, currentActivationData, newActivationData) {
+            if (currentItem == newItem) {
+                return compareArrays(currentActivationData, newActivationData);
+            }
+
             return false;
         };
 
@@ -219,7 +241,7 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
                     if (previousActivation == instance) {
                         router.attached();
                     }
-                } else if(failData.redirect){
+                } else if(failData && failData.redirect){
                     redirect(failData.redirect);
                 }else{
                     cancelNavigation(instance, instruction);
@@ -664,6 +686,7 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
          * @method reset
          */
         router.reset = function() {
+            currentInstruction = currentActivation = undefined;
             router.handlers = [];
             router.routes = [];
             delete router.options;
