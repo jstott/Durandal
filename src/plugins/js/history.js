@@ -1,5 +1,5 @@
 ﻿/**
- * Abstracts away the low level details of working with browser history and url changes in order to provide a solid foundation for a router.
+ * This module is based on Backbone's core history support. It abstracts away the low level details of working with browser history and url changes in order to provide a solid foundation for a router.
  * @module history
  * @requires system
  * @requires jquery
@@ -95,7 +95,7 @@ define(['durandal/system', 'jquery'], function (system, $) {
      */
     history.activate = function(options) {
         if (history.active) {
-            throw new Error("History has already been activated.");
+            system.error("History has already been activated.");
         }
 
         history.active = true;

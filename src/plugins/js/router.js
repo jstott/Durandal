@@ -225,7 +225,7 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
             rootRouter.navigatingBack = !rootRouter.explicitNavigation && currentActivation != instruction.fragment;
             router.trigger('router:route:activating', instance, instruction, router);
 
-            activator.activateItem(instance, instruction.params).then(function(succeeded, failData) {
+            activator.activateItem(instance, instruction.params).then(function(succeeded) {
                 if (succeeded) {
                     var previousActivation = currentActivation;
                     completeNavigation(instance, instruction);
@@ -241,8 +241,8 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
                     if (previousActivation == instance) {
                         router.attached();
                     }
-                } else if(failData && failData.redirect){
-                    redirect(failData.redirect);
+                } else if(activator.settings.lifecycleData && activator.settings.lifecycleData.redirect){
+                    redirect(activator.settings.lifecycleData.redirect);
                 }else{
                     cancelNavigation(instance, instruction);
                 }
@@ -327,6 +327,8 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
                 system.acquire(instruction.config.moduleId).then(function(module) {
                     var instance = system.resolveObject(module);
                     ensureActivation(activeItem, instance, instruction);
+                }).fail(function(err){
+                    system.error('Failed to load routed module (' + instruction.config.moduleId + '). Details: ' + err.message);
                 });
             }
         }
@@ -553,7 +555,7 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
         };
 
         /**
-         * Converts a route to a displayable title. This is only callef if no title is specified as part of the route mapping.
+         * Converts a route to a displayable title. This is only called if no title is specified as part of the route mapping.
          * @method convertRouteToTitle
          * @param {string} route
          * @return {string} The title.
@@ -767,9 +769,26 @@ define(['durandal/system', 'durandal/app', 'durandal/activator', 'durandal/event
         return system.defer(function(dfd) {
             startDeferred = dfd;
             rootRouter.options = system.extend({ routeHandler: rootRouter.loadUrl }, rootRouter.options, options);
+
             history.activate(rootRouter.options);
-            $(document).on('click', 'a', function(){
+
+            $(document).delegate("a", 'click', function(evt){
                 rootRouter.explicitNavigation = true;
+
+                if(history._hasPushState){
+                    if(!evt.altKey && !evt.ctrlKey && !evt.metaKey && !evt.shiftKey){
+                        // Get the anchor href and protcol
+                        var href = $(this).attr("href");
+                        var protocol = this.protocol + "//";
+
+                        // Ensure the protocol is not part of URL, meaning its relative.
+                        // Stop the event bubbling to ensure the link will not cause a page refresh.
+                        if (href.charAt(0) !== "#" && href.slice(protocol.length) !== protocol) {
+                            evt.preventDefault();
+                            history.navigate(href, true);
+                        }
+                    }
+                }
             });
         }).promise();
     };
