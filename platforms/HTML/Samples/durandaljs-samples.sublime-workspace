@@ -1,0 +1,444 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "/F/github/insight-spa2/Build/gruntfile.js",
+			"settings":
+			{
+				"buffer_size": 9078,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "Package Control Messages\n========================\n\nJsFormat:\n--------\n\n  JsFormat v1.1.0 changelog:\n  - Added support for .jsbeautifyrc files. Allows for per-project settings without constantly having to change the JsFormat uset settings.\n  For more info, check out the relevant section of the documentation: https://github.com/jdc0589/JsFormat#jsbeautifyrc-files\n",
+			"settings":
+			{
+				"buffer_size": 364,
+				"line_ending": "Windows",
+				"name": "Package Control Messages",
+				"scratch": true
+			}
+		},
+		{
+			"file": "/F/github/azure-blob-libs/package.json",
+			"settings":
+			{
+				"buffer_size": 464,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/F/github/azure-blob-libs/gruntfile.js",
+			"settings":
+			{
+				"buffer_size": 2390,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "Packages/User/grunt.sublime-build",
+	"command_palette":
+	{
+		"height": 311.0,
+		"selected_items":
+		[
+			[
+				"mark",
+				"GitHub Flavored Markdown: Preview"
+			],
+			[
+				"git",
+				"GitHub Flavored Markdown: Preview"
+			],
+			[
+				"pack",
+				"Package Control: List Packages"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"mar",
+				"Markdown Preview: Open Markdown Cheat sheet"
+			],
+			[
+				"m",
+				"Markdown Preview: Open Markdown Cheat sheet"
+			],
+			[
+				"",
+				"Preferences: Browse Packages"
+			]
+		],
+		"width": 512.0
+	},
+	"console":
+	{
+		"height": 0.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/F/github/azure-blob-libs/gruntfile.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/shell.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/StarterKit/app/viewmodels/shell.js",
+		"/C/Users/Jim/Documents/GitHub/grunt-azureblob/tasks/azureblob.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/transitions/fadeIn.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/transitions/slideInRight.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/transitions/entrance.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/index.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/shell.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/transitions/transitionHelper.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/transitions/bounce.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/css/animate.css",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/modal/index.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/modal/index.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/modal/customModal.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/masterDetail/project.js",
+		"/F/github/insight-spa2/Build/gruntfile.js",
+		"/C/Users/Jim/Documents/GitHub/grunt-azureblob/Gruntfile.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/plugins/serializer.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/system.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/plugins/http.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/plugins/widget.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/lib/durandal/js/plugins/router.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/hello/index.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/hello/index.html",
+		"/F/github/insight-spa2/insight.web/weyland-config.js",
+		"/C/Users/Jim/AppData/Roaming/Sublime Text 2/Packages/User/Preferences.sublime-settings",
+		"/C/Users/Jim/AppData/Roaming/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
+		"/C/Users/Jim/AppData/Roaming/Sublime Text 2/Packages/Default/Default (Windows).sublime-keymap",
+		"/C/Users/Jim/AppData/Roaming/Sublime Text 2/Packages/User/Default (Windows).sublime-keymap",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/modal/customModal.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/masterDetail/index.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/eventAggregator/subscriber.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/eventAggregator/subscriber.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/widgets/expander/view.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/widgets/expander/viewmodel.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/durandal-sample.sublime-workspace",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/widgets/index.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/ko/index.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/ko/index.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/main.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/eventAggregator/index.html",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/ko/clickCounter/index.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/masterDetail/index.js",
+		"/C/Users/Jim/Documents/GitHub/Durandal/platforms/HTML/Samples/app/viewComposition/index.js",
+		"/F/github/kue-jobs/readme.md",
+		"/F/github/kue-jobs/install-forever.md",
+		"/F/github/virtual-remote/app.js",
+		"/F/github/kue-jobs/install-redis.md",
+		"/F/github/kue-jobs/src/jobs/thumbnails/job.js",
+		"/F/github/kue-jobs/src/jobs/share/azureBlob.js",
+		"/F/github/kue-jobs/src/workQueue.js",
+		"/F/github/kue-jobs/src/jobs/thumbnails/image.json",
+		"/C/ps-aux.txt",
+		"/F/github/kue-jobs/src/log.js",
+		"/F/github/kue-jobs/blob.json",
+		"/F/github/kue-jobs/queue.js",
+		"/F/github/kue-jobs/src/pool.js",
+		"/F/github/kue-jobs/src/jobs/thumbnails/snapShot.js",
+		"/F/github/kue-jobs/example.js",
+		"/F/github/kue-jobs/startForever.sh",
+		"/F/github/kue-jobs/image.json",
+		"/F/github/kue-jobs/gruntfile.js",
+		"/F/github/kue-jobs/src/azureBlob.js",
+		"/F/github/kue-jobs/src/snapShot.js",
+		"/F/github/kue-jobs/src/job-thumbnails.js",
+		"/F/github/insight-v8/Build/Build.proj",
+		"/F/github/kue-jobs/src/kue-cleanup.js",
+		"/F/github/kue-jobs/package.json",
+		"/C/Users/Jim/AppData/Roaming/Sublime Text 2/Packages/User/grunt.sublime-build",
+		"/F/github/kue-jobs/kue-jobs.sublime-project",
+		"/F/github/kue-jobs/test/example.js",
+		"/F/github/kue-jobs/config.json",
+		"/F/github/kue-jobs/index.js",
+		"/F/github/kue-jobs/libs/workQueue.js",
+		"/F/github/kue-jobs/libs/azureBlob.js",
+		"/F/github/kue-jobs/libs/snapShot.js",
+		"/F/github/kue-jobs/libs/snapshot/blob.json",
+		"/F/github/kue-jobs/libs/snapshot/index.js",
+		"/F/github/kue-jobs/libs/snapshot/azureBlob.js",
+		"/F/github/kue-jobs/libs/snapshot/snapshot.js",
+		"/F/github/kue-jobs/libs/snapshot/gruntfile.js",
+		"/F/github/html-snapshot/src/html-snapshot/snapshot.js",
+		"/F/github/html-snapshot/index.js",
+		"/F/github/kue-jobs/libs/package.json",
+		"/F/github/kue-jobs/libs/snapshot.js",
+		"/C/Users/Jim/AppData/Roaming/Sublime Text 2/Packages/XML/XML.tmLanguage",
+		"/C/Users/Jim/AppData/Roaming/Sublime Text 2/Packages/XML/XML.sublime-settings",
+		"/F/github/insight-v8/1mucci7186-IP-Map.md",
+		"/F/github/virtual-remote/build/build.proj",
+		"/F/github/insight-spa2/Build/Build.proj",
+		"/F/github/html-snapshot/package.json",
+		"/F/github/html-snapshot/src/html-snapshot/package.json",
+		"/F/github/insight-v8/Build/NSIS/cpmsetup75.nsi",
+		"/F/github/insight-v8/README.md",
+		"/F/github/virtual-remote/vr-project.sublime-project"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			"C:\\Users\\Jim\\Documents\\GitHub\\Durandal\\platforms\\HTML\\Samples",
+			"F:\\github\\kue-jobs"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"});",
+			"fadeInRight",
+			"clearValues",
+			"serializer",
+			"allPluginIds",
+			"canDeactivate",
+			"guardRoute",
+			"compositionComplete",
+			"activate ",
+			"'durandal/activator'",
+			"router.navigate(",
+			"*",
+			"MarkdownPreview",
+			"jobs",
+			"copyFiles",
+			"copyFile",
+			"glob",
+			"self",
+			"blob",
+			"mapTargets",
+			"function job",
+			"urlPath",
+			"dirExists",
+			"fileExists",
+			"util.",
+			"config",
+			"fileExistsAndIsWellFormed",
+			"image.json",
+			"fnCopyToBlob",
+			"tmp",
+			"forEachLimit",
+			"ScanTarget",
+			"dest",
+			"file.dest",
+			"'",
+			"page",
+			"TargetRelease",
+			"v7",
+			"TargetBranch"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "/F/github/insight-spa2/Build/gruntfile.js",
+					"settings":
+					{
+						"buffer_size": 9078,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 630.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"settings":
+					{
+						"buffer_size": 364,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								364,
+								364
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/F/github/azure-blob-libs/package.json",
+					"settings":
+					{
+						"buffer_size": 464,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								432,
+								432
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/F/github/azure-blob-libs/gruntfile.js",
+					"settings":
+					{
+						"buffer_size": 2390,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1710,
+								1710
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 360.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 100.0
+	},
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": false,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 197.0,
+	"status_bar_visible": true
+}

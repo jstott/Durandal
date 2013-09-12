@@ -1,0 +1,10 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+			"folder_exclude_patterns": ["docs","log",".git","node_modules","tmp","temp"],
+			"file_exclude_patterns": ["*.gitignore","*.sublime-work*"]
+		}
+	]
+}
